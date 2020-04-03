@@ -22,17 +22,11 @@ void update_player(Player* player){
 
     player->vx = 0;
     player->vy = 0;
-
-   
 }
 SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
     uint8_t *image;
     int width,height;
     int error = lodepng_decode32_file(&image,&width,&height,filename);
-
-    if(error){
-        printf("lodepng error");
-    }
 
     SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image,width,height,32,width*4,
                                 0xff000000,
@@ -87,8 +81,7 @@ int main(int argc,char *argv[]){
 
         SDL_SetRenderDrawColor(renderer,27,58,89,255);
         SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer,0,255,0,255);
-
+        
         render_player(renderer,&player);
 
         SDL_RenderPresent(renderer);
