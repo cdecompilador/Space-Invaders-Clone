@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<stdbool.h>
 #include<SDL2/SDL.h>
-
+//hello
 void draw_triangle(SDL_Renderer* renderer){
     for(int y = 0;y<600;y++){
         for(int x = 0;x<600;x++){
