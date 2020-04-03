@@ -5,6 +5,9 @@
 
 #include"lodepng.h"
 
+#define WIDTH 600
+#define HEIGHT 600
+
 typedef struct{
     float x,y,vx,vy;
     int size;
@@ -16,9 +19,23 @@ void render_player(SDL_Renderer* renderer,Player* player){
     SDL_Rect dest_rect = {player->x,player->y,player->size,player->size};
     SDL_RenderCopy(renderer,player->texture,&src_rect,&dest_rect);
 }
-void update_player(Player* player){
-    player->x += player->vx;
-    player->y += player->vy;
+void update_player(Player* player,float dt){
+    player->x += player->vx * dt/10;
+    player->y += player->vy * dt/10;
+
+    if(player->x + player->vx + player->size > WIDTH){
+        player->x = WIDTH - player->size;
+        player->vx = 0;
+    }if(player->x < 0){
+        player->x = 0;
+        player->vx = 0;
+    }if(player->y + player->vy + player->size > HEIGHT){
+        player->y = HEIGHT - player->size;
+        player->vy = 0;
+    }if(player->y < 0){
+        player->y = 0;
+        player->vy = 0;
+    }
 
     player->vx = 0;
     player->vy = 0;
@@ -41,7 +58,7 @@ int main(int argc,char *argv[]){
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window *window = SDL_CreateWindow("Space Invaders Clone",20,20,600,600,0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
 
     SDL_Texture *player_texture = load_texture_from_png(renderer,"nave.png");
 
@@ -52,11 +69,12 @@ int main(int argc,char *argv[]){
     player.size = 70;
     player.texture = player_texture;
 
+    float dt = 7;
     bool running = true;
     
     SDL_Event event;
     while(running){
-
+        float begin = SDL_GetTicks();
         SDL_PollEvent(&event);
 
         switch (event.type)
@@ -77,7 +95,7 @@ int main(int argc,char *argv[]){
             player.vy = 5;
         }
 
-        update_player(&player);
+        update_player(&player,dt);
 
         SDL_SetRenderDrawColor(renderer,27,58,89,255);
         SDL_RenderClear(renderer);
@@ -86,6 +104,7 @@ int main(int argc,char *argv[]){
 
         SDL_RenderPresent(renderer);
 
+        dt = SDL_GetTicks() - begin;
     }
 
     return 0;
