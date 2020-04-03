@@ -1,7 +1,8 @@
 PKGS=sdl2
-CFLAGS=-Wall $(shell pkg-config --cflags $(PKGS))
+CFLAGS=-Wall -ggdb -mconsole $(shell pkg-config --cflags $(PKGS))
 LIBS=$(shell pkg-config --libs $(PKGS))
 
 main:main.c
-	gcc $(CFLAGS) main.c -o main.exe $(LIBS)
+	gcc $(CFLAGS) main.c lodepng.c -o main.exe $(LIBS)
+	./main.exe
  
