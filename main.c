@@ -4,6 +4,7 @@
 #include<SDL2/SDL.h>
 //hello
 //cambio 2
+//cambio 3
 void draw_triangle(SDL_Renderer* renderer){
     for(int y = 0;y<600;y++){
         for(int x = 0;x<600;x++){
