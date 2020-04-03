@@ -4,21 +4,27 @@
 #include<SDL2/SDL.h>
 
 #include"lodepng.h"
-#include"glm/glm.h"
 
 typedef struct{
-    glm_vec2 pos;
-    glm_vec2 vel;
+    float x,y,vx,vy;
     int size;
     SDL_Texture* texture;
 }Player;
 
 void render_player(SDL_Renderer* renderer,Player* player){
     SDL_Rect src_rect = {0,0,32,32};
-    SDL_Rect dest_rect = {player->pos.x,player->pos.y,player->size,player->size};
+    SDL_Rect dest_rect = {player->x,player->y,player->size,player->size};
     SDL_RenderCopy(renderer,player->texture,&src_rect,&dest_rect);
 }
+void update_player(Player* player){
+    player->x += player->vx;
+    player->y += player->vy;
 
+    player->vx = 0;
+    player->vy = 0;
+
+   
+}
 SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
     uint8_t *image;
     int width,height;
@@ -41,19 +47,19 @@ int main(int argc,char *argv[]){
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window *window = SDL_CreateWindow("Space Invaders Clone",20,20,600,600,0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     SDL_Texture *player_texture = load_texture_from_png(renderer,"nave.png");
 
     Player player;
     memset(&player,0,sizeof(player));
-    player.pos.x = 50;
-    player.pos.y = 50;
+    player.x = 50;
+    player.y = 50;
     player.size = 70;
     player.texture = player_texture;
 
     bool running = true;
-
+    
     SDL_Event event;
     while(running){
 
@@ -65,6 +71,20 @@ int main(int argc,char *argv[]){
                 return -1;
             }
         }
+        const uint8_t *keyboard = SDL_GetKeyboardState(NULL);
+
+        if(keyboard[SDL_SCANCODE_A]){
+            player.vx = -5;
+        }if(keyboard[SDL_SCANCODE_D]){
+            player.vx = 5;
+        }if(keyboard[SDL_SCANCODE_W]){
+            player.vy = -5;
+        }if(keyboard[SDL_SCANCODE_S]){
+            player.vy = 5;
+        }
+
+        update_player(&player);
+
         SDL_SetRenderDrawColor(renderer,27,58,89,255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer,0,255,0,255);
@@ -72,6 +92,7 @@ int main(int argc,char *argv[]){
         render_player(renderer,&player);
 
         SDL_RenderPresent(renderer);
+
     }
 
     return 0;
