@@ -1,3 +1,6 @@
 (x) Cargar sprite
 (x) Hacer que se mueva
-() Organización
+(+-) Organización
+
+() Fondo efecto paralax
+() Ralentización
