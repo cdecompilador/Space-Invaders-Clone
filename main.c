@@ -4,8 +4,20 @@
 #include<SDL2/SDL.h>
 
 #include"lodepng.h"
+#include"glm/glm.h"
 
+typedef struct{
+    glm_vec2 pos;
+    glm_vec2 vel;
+    int size;
+    SDL_Texture* texture;
+}Player;
 
+void render_player(SDL_Renderer* renderer,Player* player){
+    SDL_Rect src_rect = {0,0,32,32};
+    SDL_Rect dest_rect = {player->pos.x,player->pos.y,player->size,player->size};
+    SDL_RenderCopy(renderer,player->texture,&src_rect,&dest_rect);
+}
 
 SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
     uint8_t *image;
@@ -33,6 +45,13 @@ int main(int argc,char *argv[]){
 
     SDL_Texture *player_texture = load_texture_from_png(renderer,"nave.png");
 
+    Player player;
+    memset(&player,0,sizeof(player));
+    player.pos.x = 50;
+    player.pos.y = 50;
+    player.size = 70;
+    player.texture = player_texture;
+
     bool running = true;
 
     SDL_Event event;
@@ -50,9 +69,7 @@ int main(int argc,char *argv[]){
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer,0,255,0,255);
 
-        SDL_Rect src_rect = {0,0,32,32};
-        SDL_Rect dest_rect = {0,0,32,32};
-        SDL_RenderCopy(renderer,player_texture,&src_rect,&dest_rect);
+        render_player(renderer,&player);
 
         SDL_RenderPresent(renderer);
     }

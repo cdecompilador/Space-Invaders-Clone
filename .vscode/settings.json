@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.cpp": "cpp",
+        "*.html": "html",
+        "sdl.h": "c"
+    }
+}
