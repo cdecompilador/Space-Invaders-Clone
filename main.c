@@ -5,12 +5,8 @@
 
 #include"lodepng.h"
 
-#define WIDTH 600
-#define HEIGHT 600
-
-typedef struct{
-    float x,y,vy;
-}Haz;
+const int WIDTH =  600;
+const int HEIGHT = 600;
 
 typedef struct{
     float x,y,vy;
@@ -24,7 +20,6 @@ void update_star(Star *star,float dt){
     if(star->y > WIDTH){
         star->y = rand()%WIDTH - WIDTH;
     }
-    
 }
 void render_star(SDL_Renderer *renderer,Star *star){
     SDL_Rect src_rect = {0,0,6,6};
@@ -44,6 +39,20 @@ void render_player(SDL_Renderer* renderer,Player* player){
     SDL_Rect src_rect = {0,0,32,32};
     SDL_Rect dest_rect = {player->x,player->y,player->size,player->size};
     SDL_RenderCopy(renderer,player->texture,&src_rect,&dest_rect);
+    int alpha = 255;
+    int line_y = 63;
+    SDL_SetRenderDrawColor(renderer,255,0,0,100);
+    SDL_SetRenderDrawBlendMode(renderer,SDL_BLENDMODE_BLEND);
+    SDL_RenderFillRect(renderer,&src_rect);
+    /*
+    for(int i = 0;i < 40;i++){
+        SDL_RenderDrawLine(renderer,player->x + 7,player->y + line_y,player->x+62,player->y + line_y);
+        alpha -= 30;
+        line_y += 1;
+    }
+    */
+   
+
 }
 void update_player(Player* player,float dt){
     player->x += player->vx * dt/10;
@@ -158,13 +167,13 @@ int main(int argc,char *argv[]){
             update_star(stars[i],dt);
         }
         
-
         SDL_SetRenderDrawColor(renderer,27,58,89,255);
         SDL_RenderClear(renderer);
         
         for(int i = 0;i < 45;i++){
             render_star(renderer,stars[i]);
-        };
+        }
+
         render_player(renderer,&player);
 
         SDL_RenderPresent(renderer);
