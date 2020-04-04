@@ -2,11 +2,30 @@
 #include<stdlib.h>
 #include<stdbool.h>
 #include<SDL2/SDL.h>
+#include<math.h>
 
 #include"lodepng.h"
 
 const int WIDTH =  600;
 const int HEIGHT = 600;
+
+typedef struct{
+    float x,y,vx,vy;
+    float size;
+    float angle;
+    SDL_Texture* texture;
+}Bullet;
+void update_bullet(Bullet* bullet){
+    bullet->x += bullet->vx;
+    bullet->vy += bullet->vy;
+    bullet->angle = acosf(bullet->vx/sqrtf(pow(bullet->vx,2)+pow(bullet->vx,2)));
+    printf("Angle: %f\n",bullet->angle);
+}
+void render_bullet(SDL_Renderer* renderer,Bullet* bullet){
+    SDL_Rect src_rect = {0,0,6,6};
+    SDL_Rect dest_rect = {bullet->x,bullet->y,bullet->size,bullet->size};
+    SDL_RenderCopy(renderer,bullet->texture,&src_rect,&dest_rect);
+}
 
 typedef struct{
     float x,y,vy;
@@ -39,18 +58,18 @@ void render_player(SDL_Renderer* renderer,Player* player){
     SDL_Rect src_rect = {0,0,32,32};
     SDL_Rect dest_rect = {player->x,player->y,player->size,player->size};
     SDL_RenderCopy(renderer,player->texture,&src_rect,&dest_rect);
-    int alpha = 255;
-    int line_y = 63;
-    SDL_SetRenderDrawColor(renderer,255,0,0,100);
-    SDL_SetRenderDrawBlendMode(renderer,SDL_BLENDMODE_BLEND);
-    SDL_RenderFillRect(renderer,&src_rect);
-    /*
-    for(int i = 0;i < 40;i++){
-        SDL_RenderDrawLine(renderer,player->x + 7,player->y + line_y,player->x+62,player->y + line_y);
-        alpha -= 30;
-        line_y += 1;
+    int alpha = 200;
+    int line_y = 62;
+    if(player->vy < 0){
+        SDL_SetRenderDrawBlendMode(renderer,SDL_BLENDMODE_BLEND);
+        for(int i = 0;i < 20;i++){
+            SDL_SetRenderDrawColor(renderer,255,255,255,alpha);
+            SDL_RenderDrawLine(renderer,player->x + 7,player->y + line_y,player->x+62,player->y + line_y);
+            alpha -= 10;
+            line_y += 1;
+        }
     }
-    */
+
    
 
 }
@@ -72,8 +91,6 @@ void update_player(Player* player,float dt){
         player->vy = 0;
     }
 
-    player->vx = 0;
-    player->vy = 0;
 }
 SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
     uint8_t *image;
@@ -133,7 +150,7 @@ int main(int argc,char *argv[]){
         stars[i] = star;
     }
     
-
+    
     float dt = 7;
     bool running = true;
     
@@ -179,6 +196,9 @@ int main(int argc,char *argv[]){
         SDL_RenderPresent(renderer);
 
         dt = SDL_GetTicks() - begin;
+
+        player.vx = 0;
+        player.vy = 0;
     }
 
     return 0;

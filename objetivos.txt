@@ -4,4 +4,8 @@
 
 (X) Fondo efecto paralax
 (X) Ralentización
-() Haz de la nave
+(X) Haz de la nave
+
+() Disparo
+() Disparo con click
+() Spawnear enemigo

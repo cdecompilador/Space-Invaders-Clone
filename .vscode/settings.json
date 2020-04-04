@@ -3,6 +3,9 @@
         "*.cpp": "cpp",
         "*.html": "html",
         "sdl.h": "c",
-        "lodepng.h": "c"
+        "lodepng.h": "c",
+        "math.h": "c",
+        "stdbool.h": "c",
+        "stdlib.h": "c"
     }
 }
