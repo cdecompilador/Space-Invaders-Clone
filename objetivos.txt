@@ -2,5 +2,6 @@
 (x) Hacer que se mueva
 (+-) Organización
 
-() Fondo efecto paralax
-() Ralentización
+(X) Fondo efecto paralax
+(X) Ralentización
+() Haz de la nave

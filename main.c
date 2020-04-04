@@ -9,12 +9,38 @@
 #define HEIGHT 600
 
 typedef struct{
+    float x,y,vy;
+}Haz;
+
+typedef struct{
+    float x,y,vy;
+    float size;
+    SDL_Texture* texture;
+}Star;
+
+void update_star(Star *star,float dt){
+    star->y += star->vy * dt/5;
+
+    if(star->y > WIDTH){
+        star->y = rand()%WIDTH - WIDTH;
+    }
+    
+}
+void render_star(SDL_Renderer *renderer,Star *star){
+    SDL_Rect src_rect = {0,0,6,6};
+    SDL_Rect dest_rect = {star->x,star->y,star->size,star->size};
+    SDL_SetTextureAlphaMod(star->texture,150);
+    SDL_RenderCopy(renderer,star->texture,&src_rect,&dest_rect);
+}
+
+typedef struct{
     float x,y,vx,vy;
     int size;
     SDL_Texture* texture;
 }Player;
 
 void render_player(SDL_Renderer* renderer,Player* player){
+
     SDL_Rect src_rect = {0,0,32,32};
     SDL_Rect dest_rect = {player->x,player->y,player->size,player->size};
     SDL_RenderCopy(renderer,player->texture,&src_rect,&dest_rect);
@@ -58,7 +84,7 @@ int main(int argc,char *argv[]){
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window *window = SDL_CreateWindow("Space Invaders Clone",20,20,600,600,0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     SDL_Texture *player_texture = load_texture_from_png(renderer,"nave.png");
 
@@ -68,6 +94,36 @@ int main(int argc,char *argv[]){
     player.y = 50;
     player.size = 70;
     player.texture = player_texture;
+
+    Star *stars[45];
+    for(int i = 0;i < 15;i++){
+        Star *star = malloc(sizeof(Star));
+        star->x = rand()%WIDTH;
+        star->y = rand()%WIDTH - WIDTH;
+        star->vy = 1;
+        star->size = 6;
+        star->texture = load_texture_from_png(renderer,"star.png");
+        stars[i] = star;
+    }
+    for(int i = 15;i < 30;i++){
+        Star *star = malloc(sizeof(Star));
+        star->x = rand()%WIDTH;
+        star->y = rand()%WIDTH - WIDTH;
+        star->vy = 0.6;
+        star->size = 4;
+        star->texture = load_texture_from_png(renderer,"star.png");
+        stars[i] = star;
+    }
+    for(int i = 30;i < 45;i++){
+        Star *star = malloc(sizeof(Star));
+        star->x = rand()%WIDTH;
+        star->y = rand()%WIDTH - WIDTH;
+        star->vy = 0.3;
+        star->size = 2;
+        star->texture = load_texture_from_png(renderer,"star.png");
+        stars[i] = star;
+    }
+    
 
     float dt = 7;
     bool running = true;
@@ -94,12 +150,21 @@ int main(int argc,char *argv[]){
         }if(keyboard[SDL_SCANCODE_S]){
             player.vy = 5;
         }
+        if(player.vx == 0 && player.vy == 0)
+            player.vy = 0.9;
 
         update_player(&player,dt);
+        for(int i = 0;i < 45;i++){
+            update_star(stars[i],dt);
+        }
+        
 
         SDL_SetRenderDrawColor(renderer,27,58,89,255);
         SDL_RenderClear(renderer);
         
+        for(int i = 0;i < 45;i++){
+            render_star(renderer,stars[i]);
+        };
         render_player(renderer,&player);
 
         SDL_RenderPresent(renderer);
