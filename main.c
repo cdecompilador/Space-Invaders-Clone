@@ -3,28 +3,69 @@
 #include<stdbool.h>
 #include<SDL2/SDL.h>
 #include<math.h>
-
+#include"LinkedList.h"
 #include"lodepng.h"
+
+// #define MAX_BULLETS 100
 
 const int WIDTH =  600;
 const int HEIGHT = 600;
 
+const int bullet_delay = 200;
+
 typedef struct{
     float x,y,vx,vy;
-    float size;
-    float angle;
+    int size;
     SDL_Texture* texture;
-}Bullet;
-void update_bullet(Bullet* bullet){
-    bullet->x += bullet->vx;
-    bullet->vy += bullet->vy;
-    bullet->angle = acosf(bullet->vx/sqrtf(pow(bullet->vx,2)+pow(bullet->vx,2)));
-    printf("Angle: %f\n",bullet->angle);
+    int bullet_quantity;
+    LinkedList bullets;
+}Player;
+
+SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
+    uint8_t *image;
+    unsigned int width,height;
+    lodepng_decode32_file(&image,&width,&height,filename);
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image,width,height,32,width*4,
+                                0xff000000,
+                                0x00ff0000,
+                                0x0000ff00,
+                                0x000000ff);
+    return SDL_CreateTextureFromSurface(renderer,surface);
 }
-void render_bullet(SDL_Renderer* renderer,Bullet* bullet){
+
+float angle_between_two_vectors2Df(float ux,float uy,float vx,float vy){
+    float angle = acosf((ux*vx+uy*vy)/(sqrtf(ux*ux+uy*uy)*sqrtf(vx*vx+vy*vy)));
+    //printf("res1: %f",(ux*vx+uy*vy)/(sqrtf(ux*ux+uy*uy)*sqrtf(vx*vx+vy*vy)));
+    return angle*(180.f/M_PI);
+}
+
+void update_bullets(Player* player,float dt){
+    Node* current_node = player->bullets.head;
+    while(current_node != NULL){
+        current_node->bullet->y += current_node->bullet->vy * dt / 10;
+        current_node->bullet->x += current_node->bullet->vx * dt / 10;
+        current_node->bullet->angle = angle_between_two_vectors2Df(current_node->bullet->vx,current_node->bullet->vy,1,0);
+        if(current_node->bullet->y < 0){
+            printf("Delting bullet\n");
+            current_node = delete(&player->bullets,current_node->bullet);
+        }else{
+            current_node = current_node->next;
+        }
+    }
+
+}
+void render_bullets(SDL_Renderer* renderer,Player* player){
     SDL_Rect src_rect = {0,0,6,6};
-    SDL_Rect dest_rect = {bullet->x,bullet->y,bullet->size,bullet->size};
-    SDL_RenderCopy(renderer,bullet->texture,&src_rect,&dest_rect);
+    SDL_Point center = {3,3};
+    Node* current_node = player->bullets.head;
+    while(current_node != NULL){
+        SDL_Rect dest_rect = {current_node->bullet->x,current_node->bullet->y,current_node->bullet->size,current_node->bullet->size};
+        SDL_RenderCopyEx(renderer,current_node->bullet->texture,&src_rect,&dest_rect,current_node->bullet->angle - 90,&center,SDL_FLIP_NONE);
+
+        current_node = current_node->next;
+    }
+
 }
 
 typedef struct{
@@ -47,11 +88,17 @@ void render_star(SDL_Renderer *renderer,Star *star){
     SDL_RenderCopy(renderer,star->texture,&src_rect,&dest_rect);
 }
 
-typedef struct{
-    float x,y,vx,vy;
-    int size;
-    SDL_Texture* texture;
-}Player;
+void spawn_bullet(SDL_Renderer* renderer,Player* player){
+    Bullet* bullet = malloc(sizeof(Bullet));
+    bullet->x = player->x;
+    bullet->y = player->y;
+    bullet->vy = -5;
+    bullet->vx = 0;
+    bullet->angle = 0;
+    bullet->texture = load_texture_from_png(renderer,"bullet.png");
+    bullet->size = 6;
+    append(&player->bullets,bullet);
+}
 
 void render_player(SDL_Renderer* renderer,Player* player){
 
@@ -69,9 +116,6 @@ void render_player(SDL_Renderer* renderer,Player* player){
             line_y += 1;
         }
     }
-
-   
-
 }
 void update_player(Player* player,float dt){
     player->x += player->vx * dt/10;
@@ -92,18 +136,7 @@ void update_player(Player* player,float dt){
     }
 
 }
-SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
-    uint8_t *image;
-    int width,height;
-    int error = lodepng_decode32_file(&image,&width,&height,filename);
 
-    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image,width,height,32,width*4,
-                                0xff000000,
-                                0x00ff0000,
-                                0x0000ff00,
-                                0x000000ff);
-    return SDL_CreateTextureFromSurface(renderer,surface);
-}
 
 int main(int argc,char *argv[]){
 
@@ -118,8 +151,13 @@ int main(int argc,char *argv[]){
     memset(&player,0,sizeof(player));
     player.x = 50;
     player.y = 50;
+    player.vy = 0;
+    player.vx = 0;
     player.size = 70;
     player.texture = player_texture;
+    player.bullet_quantity = 0;
+    player.bullets.head = NULL;
+    player.bullets.tail = NULL;
 
     Star *stars[45];
     for(int i = 0;i < 15;i++){
@@ -150,10 +188,10 @@ int main(int argc,char *argv[]){
         stars[i] = star;
     }
     
-    
+    int current_bullet_delay = bullet_delay;
+
     float dt = 7;
     bool running = true;
-    
     SDL_Event event;
     while(running){
         float begin = SDL_GetTicks();
@@ -175,11 +213,21 @@ int main(int argc,char *argv[]){
             player.vy = -5;
         }if(keyboard[SDL_SCANCODE_S]){
             player.vy = 5;
+        }if(keyboard[SDL_SCANCODE_SPACE] && current_bullet_delay < 0){
+            spawn_bullet(renderer,&player);
+            printf("Spawned bullet\n");
+            current_bullet_delay = bullet_delay;
+        }
+        if(current_bullet_delay < -1){
+            current_bullet_delay = -1;
         }
         if(player.vx == 0 && player.vy == 0)
             player.vy = 0.9;
 
         update_player(&player,dt);
+
+        update_bullets(&player,dt);
+
         for(int i = 0;i < 45;i++){
             update_star(stars[i],dt);
         }
@@ -191,12 +239,14 @@ int main(int argc,char *argv[]){
             render_star(renderer,stars[i]);
         }
 
+        render_bullets(renderer,&player);
+
         render_player(renderer,&player);
 
         SDL_RenderPresent(renderer);
 
         dt = SDL_GetTicks() - begin;
-
+        current_bullet_delay -= dt;
         player.vx = 0;
         player.vy = 0;
     }

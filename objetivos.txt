@@ -7,5 +7,6 @@
 (X) Haz de la nave
 
 () Disparo
+() Ordenar esto
 () Disparo con click
 () Spawnear enemigo
