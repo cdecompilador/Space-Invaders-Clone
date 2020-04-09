@@ -150,9 +150,9 @@ int main(int argc,char *argv[]){
     SDL_Window* window = SDL_CreateWindow("Space Invaders Clone",20,20,600,600,0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-    SDL_Texture* player_texture = load_texture_from_png(renderer,"nave.png");
-    SDL_Texture* bullet_texture = load_texture_from_png(renderer,"bullet.png");
-    SDL_Texture* enemy1_texture = load_texture_from_png(renderer,"enemy1.png");
+    SDL_Texture* player_texture = load_texture_from_png(renderer,"res/nave.png");
+    SDL_Texture* bullet_texture = load_texture_from_png(renderer,"res/bullet.png");
+    SDL_Texture* enemy1_texture = load_texture_from_png(renderer,"res/enemy1.png");
     Player player;
     memset(&player,0,sizeof(player));
     player.x = 50;
@@ -180,7 +180,7 @@ int main(int argc,char *argv[]){
         star->y = rand()%WIDTH - WIDTH;
         star->vy = 1;
         star->size = 6;
-        star->texture = load_texture_from_png(renderer,"star.png");
+        star->texture = load_texture_from_png(renderer,"res/star.png");
         stars[i] = star;
     }
     for(int i = 15;i < 30;i++){
@@ -189,7 +189,7 @@ int main(int argc,char *argv[]){
         star->y = rand()%WIDTH - WIDTH;
         star->vy = 0.6;
         star->size = 4;
-        star->texture = load_texture_from_png(renderer,"star.png");
+        star->texture = load_texture_from_png(renderer,"res/star.png");
         stars[i] = star;
     }
     for(int i = 30;i < 45;i++){
@@ -198,7 +198,7 @@ int main(int argc,char *argv[]){
         star->y = rand()%WIDTH - WIDTH;
         star->vy = 0.3;
         star->size = 2;
-        star->texture = load_texture_from_png(renderer,"star.png");
+        star->texture = load_texture_from_png(renderer,"res/star.png");
         stars[i] = star;
     }
     
