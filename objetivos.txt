@@ -6,7 +6,6 @@
 (X) Ralentización
 (X) Haz de la nave
 
-() Disparo
-() Ordenar esto
+(X) Disparo
 () Disparo con click
 () Spawnear enemigo

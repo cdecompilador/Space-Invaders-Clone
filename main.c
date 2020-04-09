@@ -5,6 +5,7 @@
 #include<math.h>
 #include"LinkedList.h"
 #include"lodepng.h"
+#include"enemy.h"
 
 // #define MAX_BULLETS 100
 
@@ -47,13 +48,11 @@ void update_bullets(Player* player,float dt){
         current_node->bullet->x += current_node->bullet->vx * dt / 10;
         current_node->bullet->angle = angle_between_two_vectors2Df(current_node->bullet->vx,current_node->bullet->vy,1,0);
         if(current_node->bullet->y < 0){
-            printf("Delting bullet\n");
             current_node = delete(&player->bullets,current_node->bullet);
         }else{
             current_node = current_node->next;
         }
     }
-
 }
 void render_bullets(SDL_Renderer* renderer,Player* player){
     SDL_Rect src_rect = {0,0,6,6};
@@ -65,9 +64,7 @@ void render_bullets(SDL_Renderer* renderer,Player* player){
 
         current_node = current_node->next;
     }
-
 }
-
 typedef struct{
     float x,y,vy;
     float size;
@@ -88,16 +85,27 @@ void render_star(SDL_Renderer *renderer,Star *star){
     SDL_RenderCopy(renderer,star->texture,&src_rect,&dest_rect);
 }
 
-void spawn_bullet(SDL_Renderer* renderer,Player* player){
-    Bullet* bullet = malloc(sizeof(Bullet));
-    bullet->x = player->x;
-    bullet->y = player->y;
-    bullet->vy = -5;
-    bullet->vx = 0;
-    bullet->angle = 0;
-    bullet->texture = load_texture_from_png(renderer,"bullet.png");
-    bullet->size = 6;
-    append(&player->bullets,bullet);
+void spawn_normal_bullets(SDL_Renderer* renderer,Player* player,SDL_Texture* bullet_texture){
+    Bullet* bullet1 = malloc(sizeof(Bullet));
+    bullet1->x = player->x + 4 * 70/32;
+    bullet1->y = player->y + 21 * 70/32;
+    bullet1->vy = -5;
+    bullet1->vx = 0;
+    bullet1->angle = 0;
+    bullet1->texture = bullet_texture;
+    bullet1->size = 6;
+
+    Bullet* bullet2 = malloc(sizeof(Bullet));
+    bullet2->x = player->x + 26 * 70/32;
+    bullet2->y = player->y + 21 * 70/32;
+    bullet2->vy = -5;
+    bullet2->vx = 0;
+    bullet2->angle = 0;
+    bullet2->texture = bullet_texture;
+    bullet2->size = 6;
+
+    append(&player->bullets,bullet1);
+    append(&player->bullets,bullet2);
 }
 
 void render_player(SDL_Renderer* renderer,Player* player){
@@ -134,19 +142,17 @@ void update_player(Player* player,float dt){
         player->y = 0;
         player->vy = 0;
     }
-
 }
-
-
 int main(int argc,char *argv[]){
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_Window *window = SDL_CreateWindow("Space Invaders Clone",20,20,600,600,0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Window* window = SDL_CreateWindow("Space Invaders Clone",20,20,600,600,0);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-    SDL_Texture *player_texture = load_texture_from_png(renderer,"nave.png");
-
+    SDL_Texture* player_texture = load_texture_from_png(renderer,"nave.png");
+    SDL_Texture* bullet_texture = load_texture_from_png(renderer,"bullet.png");
+    SDL_Texture* enemy1_texture = load_texture_from_png(renderer,"enemy1.png");
     Player player;
     memset(&player,0,sizeof(player));
     player.x = 50;
@@ -158,6 +164,14 @@ int main(int argc,char *argv[]){
     player.bullet_quantity = 0;
     player.bullets.head = NULL;
     player.bullets.tail = NULL;
+
+    Enemy* enemy = calloc(1,sizeof(Enemy));
+    enemy->x = 50;
+    enemy->y = 50;
+    enemy->vy = 0.5;
+    enemy->texture = enemy1_texture;
+    enemy->size = 70;
+    
 
     Star *stars[45];
     for(int i = 0;i < 15;i++){
@@ -214,8 +228,7 @@ int main(int argc,char *argv[]){
         }if(keyboard[SDL_SCANCODE_S]){
             player.vy = 5;
         }if(keyboard[SDL_SCANCODE_SPACE] && current_bullet_delay < 0){
-            spawn_bullet(renderer,&player);
-            printf("Spawned bullet\n");
+            spawn_normal_bullets(renderer,&player,bullet_texture);
             current_bullet_delay = bullet_delay;
         }
         if(current_bullet_delay < -1){
@@ -225,7 +238,7 @@ int main(int argc,char *argv[]){
             player.vy = 0.9;
 
         update_player(&player,dt);
-
+        update_enemy(enemy,dt);
         update_bullets(&player,dt);
 
         for(int i = 0;i < 45;i++){
@@ -242,6 +255,7 @@ int main(int argc,char *argv[]){
         render_bullets(renderer,&player);
 
         render_player(renderer,&player);
+        render_enemy(renderer,enemy);
 
         SDL_RenderPresent(renderer);
 
