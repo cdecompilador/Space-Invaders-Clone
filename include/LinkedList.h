@@ -8,6 +8,7 @@ typedef struct{
     float x,y,vx,vy;
     float size;
     float angle;
+    bool request_delete;
     SDL_Texture* texture;
 }Bullet;
 

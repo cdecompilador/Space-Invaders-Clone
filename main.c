@@ -14,13 +14,7 @@ const int HEIGHT = 600;
 
 const int bullet_delay = 200;
 
-typedef struct{
-    float x,y,vx,vy;
-    int size;
-    SDL_Texture* texture;
-    int bullet_quantity;
-    LinkedList bullets;
-}Player;
+
 
 SDL_Texture* load_texture_from_png(SDL_Renderer* renderer,char* filename){
     uint8_t *image;
@@ -47,7 +41,7 @@ void update_bullets(Player* player,float dt){
         current_node->bullet->y += current_node->bullet->vy * dt / 10;
         current_node->bullet->x += current_node->bullet->vx * dt / 10;
         current_node->bullet->angle = angle_between_two_vectors2Df(current_node->bullet->vx,current_node->bullet->vy,1,0);
-        if(current_node->bullet->y < 0){
+        if(current_node->bullet->y < 0 || current_node->bullet->request_delete == true){
             current_node = delete(&player->bullets,current_node->bullet);
         }else{
             current_node = current_node->next;
@@ -94,7 +88,7 @@ void spawn_normal_bullets(SDL_Renderer* renderer,Player* player,SDL_Texture* bul
     bullet1->angle = 0;
     bullet1->texture = bullet_texture;
     bullet1->size = 6;
-
+    bullet1->request_delete = false;
     Bullet* bullet2 = malloc(sizeof(Bullet));
     bullet2->x = player->x + 26 * 70/32;
     bullet2->y = player->y + 21 * 70/32;
@@ -103,6 +97,7 @@ void spawn_normal_bullets(SDL_Renderer* renderer,Player* player,SDL_Texture* bul
     bullet2->angle = 0;
     bullet2->texture = bullet_texture;
     bullet2->size = 6;
+    bullet2->request_delete = false;
 
     append(&player->bullets,bullet1);
     append(&player->bullets,bullet2);
@@ -165,14 +160,9 @@ int main(int argc,char *argv[]){
     player.bullets.head = NULL;
     player.bullets.tail = NULL;
 
-    Enemy* enemy = calloc(1,sizeof(Enemy));
-    enemy->x = 50;
-    enemy->y = 50;
-    enemy->vy = 0.5;
-    enemy->texture = enemy1_texture;
-    enemy->size = 70;
-    
-
+    Enemy_spawner1 enemy_spawner1;
+    enemy_spawner1.elapsed_between_spawn = 0;
+    enemy_spawner1.enemies_spawned = 0;
     Star *stars[45];
     for(int i = 0;i < 15;i++){
         Star *star = malloc(sizeof(Star));
@@ -203,19 +193,26 @@ int main(int argc,char *argv[]){
     }
     
     int current_bullet_delay = bullet_delay;
+    int current_mouse_bullet_delay = bullet_delay;
 
     float dt = 7;
     bool running = true;
+    bool mouse_clicked = false;
     SDL_Event event;
     while(running){
         float begin = SDL_GetTicks();
         SDL_PollEvent(&event);
-
         switch (event.type)
         {
             case SDL_QUIT:{
                 return -1;
             }
+            case SDL_MOUSEBUTTONDOWN:{
+                mouse_clicked = true;
+            }break;
+            case SDL_MOUSEBUTTONUP:{
+                mouse_clicked = false;
+            }break;
         }
         const uint8_t *keyboard = SDL_GetKeyboardState(NULL);
 
@@ -237,8 +234,19 @@ int main(int argc,char *argv[]){
         if(player.vx == 0 && player.vy == 0)
             player.vy = 0.9;
 
+        if(mouse_clicked && current_mouse_bullet_delay < 0){
+            int mouse_x,mouse_y;
+            SDL_GetMouseState(&mouse_x,&mouse_y);
+            printf("%d %d\n",mouse_x,mouse_y);
+            current_mouse_bullet_delay = bullet_delay;
+            delete_enemy(&enemy_spawner1);
+         }   
+
+        start_spawn(&enemy_spawner1,dt,enemy1_texture);
+
         update_player(&player,dt);
-        update_enemy(enemy,dt);
+        // update_enemy(enemy,dt);
+        update_enemies(&enemy_spawner1,dt,&player);
         update_bullets(&player,dt);
 
         for(int i = 0;i < 45;i++){
@@ -255,14 +263,17 @@ int main(int argc,char *argv[]){
         render_bullets(renderer,&player);
 
         render_player(renderer,&player);
-        render_enemy(renderer,enemy);
+        render_enemies(renderer,&enemy_spawner1);
+        // render_enemy(renderer,enemy);
 
         SDL_RenderPresent(renderer);
 
         dt = SDL_GetTicks() - begin;
         current_bullet_delay -= dt;
+        current_mouse_bullet_delay -= dt;
         player.vx = 0;
         player.vy = 0;
+
     }
 
     return 0;

@@ -1,6 +1,6 @@
 (x) Cargar sprite
 (x) Hacer que se mueva
-(+-) Organización
+(-) Organización
 
 (X) Fondo efecto paralax
 (X) Ralentización
@@ -8,4 +8,9 @@
 
 (X) Disparo
 () Disparo con click
-() Spawnear enemigo
+(X) Spawnear enemigo
+
+() Tipo de enmigo 2 y 3
+() Pantalla de inicio
+() Vida
+() Game Over

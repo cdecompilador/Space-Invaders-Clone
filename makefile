@@ -1,5 +1,5 @@
 PKGS=sdl2
-CFLAGS=-Wall -ggdb -mconsole -Iinclude/ $(shell pkg-config --cflags $(PKGS))
+CFLAGS=-Wall -ggdb -mconsole -Iinclude $(shell pkg-config --cflags $(PKGS))
 LIBS=$(shell pkg-config --libs $(PKGS)) -lm
 
 main: main.c
