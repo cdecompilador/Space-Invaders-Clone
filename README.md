@@ -1,6 +1,6 @@
 # Space-Invaders-Clone
 You just need SDL and pkg-config
-Checked the compilation in Windown 10 and linux
+Checked the compilation in Windows 10 and linux
 ```
 make
 ```
